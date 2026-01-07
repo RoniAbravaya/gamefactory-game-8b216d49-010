@@ -1,0 +1,248 @@
+{
+  "levels": [
+    {
+      "level_number": 1,
+      "name": "Grassy Meadow",
+      "is_free": true,
+      "unlock_requirement": "none",
+      "difficulty": 0.2,
+      "time_limit_seconds": 60,
+      "target_score": 500,
+      "obstacles": {
+        "type": "static_platform",
+        "count": 5,
+        "speed": 0
+      },
+      "collectibles": {
+        "type": "coin",
+        "count": 10,
+        "value": 10
+      },
+      "special_features": [],
+      "background_theme": "grassy_meadow",
+      "music_track": "level_1"
+    },
+    {
+      "level_number": 2,
+      "name": "Rolling Hills",
+      "is_free": true,
+      "unlock_requirement": "none",
+      "difficulty": 0.3,
+      "time_limit_seconds": 75,
+      "target_score": 750,
+      "obstacles": {
+        "type": "static_platform",
+        "count": 7,
+        "speed": 0
+      },
+      "collectibles": {
+        "type": "coin",
+        "count": 15,
+        "value": 10
+      },
+      "special_features": [],
+      "background_theme": "rolling_hills",
+      "music_track": "level_2"
+    },
+    {
+      "level_number": 3,
+      "name": "Enchanted Forest",
+      "is_free": true,
+      "unlock_requirement": "none",
+      "difficulty": 0.4,
+      "time_limit_seconds": 90,
+      "target_score": 1000,
+      "obstacles": {
+        "type": "static_platform",
+        "count": 10,
+        "speed": 0
+      },
+      "collectibles": {
+        "type": "coin",
+        "count": 20,
+        "value": 10
+      },
+      "special_features": [],
+      "background_theme": "enchanted_forest",
+      "music_track": "level_3"
+    },
+    {
+      "level_number": 4,
+      "name": "Cloudy Peaks",
+      "is_free": false,
+      "unlock_requirement": "rewarded_ad",
+      "difficulty": 0.5,
+      "time_limit_seconds": 120,
+      "target_score": 1500,
+      "obstacles": {
+        "type": "static_platform",
+        "count": 12,
+        "speed": 0
+      },
+      "collectibles": {
+        "type": "coin",
+        "count": 25,
+        "value": 10
+      },
+      "special_features": [
+        "moving_platform"
+      ],
+      "background_theme": "cloudy_peaks",
+      "music_track": "level_4"
+    },
+    {
+      "level_number": 5,
+      "name": "Lava Cavern",
+      "is_free": false,
+      "unlock_requirement": "rewarded_ad",
+      "difficulty": 0.6,
+      "time_limit_seconds": 150,
+      "target_score": 2000,
+      "obstacles": {
+        "type": "static_platform",
+        "count": 15,
+        "speed": 0
+      },
+      "collectibles": {
+        "type": "coin",
+        "count": 30,
+        "value": 10
+      },
+      "special_features": [
+        "moving_platform",
+        "spikes"
+      ],
+      "background_theme": "lava_cavern",
+      "music_track": "level_5"
+    },
+    {
+      "level_number": 6,
+      "name": "Frozen Tundra",
+      "is_free": false,
+      "unlock_requirement": "rewarded_ad",
+      "difficulty": 0.7,
+      "time_limit_seconds": 180,
+      "target_score": 2500,
+      "obstacles": {
+        "type": "static_platform",
+        "count": 18,
+        "speed": 0
+      },
+      "collectibles": {
+        "type": "coin",
+        "count": 35,
+        "value": 10
+      },
+      "special_features": [
+        "moving_platform",
+        "ice_platforms"
+      ],
+      "background_theme": "frozen_tundra",
+      "music_track": "level_6"
+    },
+    {
+      "level_number": 7,
+      "name": "Neon City",
+      "is_free": false,
+      "unlock_requirement": "rewarded_ad",
+      "difficulty": 0.8,
+      "time_limit_seconds": 210,
+      "target_score": 3000,
+      "obstacles": {
+        "type": "static_platform",
+        "count": 20,
+        "speed": 0
+      },
+      "collectibles": {
+        "type": "coin",
+        "count": 40,
+        "value": 10
+      },
+      "special_features": [
+        "moving_platform",
+        "disappearing_platforms"
+      ],
+      "background_theme": "neon_city",
+      "music_track": "level_7"
+    },
+    {
+      "level_number": 8,
+      "name": "Haunted Manor",
+      "is_free": false,
+      "unlock_requirement": "rewarded_ad",
+      "difficulty": 0.8,
+      "time_limit_seconds": 240,
+      "target_score": 3500,
+      "obstacles": {
+        "type": "static_platform",
+        "count": 22,
+        "speed": 0
+      },
+      "collectibles": {
+        "type": "coin",
+        "count": 45,
+        "value": 10
+      },
+      "special_features": [
+        "moving_platform",
+        "disappearing_platforms",
+        "spikes"
+      ],
+      "background_theme": "haunted_manor",
+      "music_track": "level_8"
+    },
+    {
+      "level_number": 9,
+      "name": "Futuristic Skyway",
+      "is_free": false,
+      "unlock_requirement": "rewarded_ad",
+      "difficulty": 0.9,
+      "time_limit_seconds": 270,
+      "target_score": 4000,
+      "obstacles": {
+        "type": "static_platform",
+        "count": 25,
+        "speed": 0
+      },
+      "collectibles": {
+        "type": "coin",
+        "count": 50,
+        "value": 10
+      },
+      "special_features": [
+        "moving_platform",
+        "disappearing_platforms",
+        "anti_gravity_zones"
+      ],
+      "background_theme": "futuristic_skyway",
+      "music_track": "level_9"
+    },
+    {
+      "level_number": 10,
+      "name": "Cosmic Abyss",
+      "is_free": false,
+      "unlock_requirement": "rewarded_ad",
+      "difficulty": 0.9,
+      "time_limit_seconds": 300,
+      "target_score": 5000,
+      "obstacles": {
+        "type": "static_platform",
+        "count": 30,
+        "speed": 0
+      },
+      "collectibles": {
+        "type": "coin",
+        "count": 60,
+        "value": 10
+      },
+      "special_features": [
+        "moving_platform",
+        "disappearing_platforms",
+        "anti_gravity_zones",
+        "black_holes"
+      ],
+      "background_theme": "cosmic_abyss",
+      "music_track": "level_10"
+    }
+  ]
+}
