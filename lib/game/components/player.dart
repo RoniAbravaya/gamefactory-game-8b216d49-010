@@ -1,91 +1,73 @@
 import 'package:flame/components.dart';
-import 'package:flame/geometry.dart';
-import 'package:flame/input.dart';
-import 'package:flutter/services.dart';
+import 'package:flame/collisions.dart';
+import 'package:flutter/material.dart';
+import 'obstacle.dart';
+import 'collectible.dart';
+import '../game.dart';
 
-/// Represents the player character in the platformer game.
-class Player extends SpriteAnimationComponent
-    with HasGameRef, Hitbox, Collidable, KeyboardHandler {
+class Player extends PositionComponent
+    with HasGameRef<dynamic>, CollisionCallbacks {
+  
+  double speed = 200;
   Vector2 velocity = Vector2.zero();
-  final double gravity = 500;
-  final double jumpSpeed = -300;
-  bool onGround = false;
-  int lives = 3;
-  int score = 0;
+  bool isInvulnerable = false;
+  
+  Player({required Vector2 position})
+      : super(
+          position: position,
+          size: Vector2(50, 50),
+          anchor: Anchor.center,
+        );
 
-  Player({SpriteAnimation? animation, Vector2? position, Vector2? size})
-      : super(animation: animation, position: position, size: size) {
-    addShape(HitboxRectangle());
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    add(RectangleHitbox());
   }
 
   @override
   void update(double dt) {
     super.update(dt);
-    // Apply gravity
-    velocity.y += gravity * dt;
-    position += velocity * dt;
-
-    // Check for ground contact
-    if (position.y > gameRef.size.y - size.y) {
-      position.y = gameRef.size.y - size.y;
-      onGround = true;
-      velocity.y = 0;
-    } else {
-      onGround = false;
-    }
+    
+    position += velocity * speed * dt;
+    position.x = position.x.clamp(25, gameRef.size.x - 25);
+    position.y = position.y.clamp(25, gameRef.size.y - 25);
+    
+    velocity *= 0.9;
   }
 
   @override
-  void onCollision(Set<Vector2> intersectionPoints, Collidable other) {
-    super.onCollision(intersectionPoints, other);
-    // Handle collision with ground or platforms
-    if (other is Platform) {
-      onGround = true;
-      velocity.y = 0;
-    }
-    // Handle collision with obstacles or enemies
-    if (other is Enemy) {
-      lives--;
-      if (lives <= 0) {
-        // Handle game over or player death
-      }
-    }
+  void render(Canvas canvas) {
+    final paint = Paint()
+      ..color = isInvulnerable ? Colors.grey : Colors.blue;
+    canvas.drawRect(size.toRect(), paint);
   }
+
+  void moveLeft() => velocity.x = -1;
+  void moveRight() => velocity.x = 1;
+  void moveUp() => velocity.y = -1;
+  void moveDown() => velocity.y = 1;
 
   @override
-  bool onKeyEvent(RawKeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
-    if (keysPressed.contains(LogicalKeyboardKey.space) && onGround) {
-      // Jump if on the ground and spacebar is pressed
-      velocity.y = jumpSpeed;
-      onGround = false;
+  void onCollision(Set<Vector2> points, PositionComponent other) {
+    super.onCollision(points, other);
+    
+    if (other is Obstacle && !isInvulnerable) {
+      takeDamage();
+    } else if (other is Collectible) {
+      other.collect();
+      gameRef.addScore(other.value);
     }
-    return super.onKeyEvent(event, keysPressed);
   }
 
-  /// Increases the player's score.
-  void addScore(int points) {
-    score += points;
-  }
-
-  /// Resets the player's state for a new game or after losing a life.
-  void reset() {
-    position = Vector2(100, gameRef.size.y - size.y);
-    velocity = Vector2.zero();
-    lives = 3;
-    score = 0;
-  }
-}
-
-/// Placeholder class for Platform, representing ground or platforms the player can land on.
-class Platform extends PositionComponent with Collidable {
-  Platform({Vector2? position, Vector2? size}) : super(position: position, size: size) {
-    addShape(HitboxRectangle());
-  }
-}
-
-/// Placeholder class for Enemy, representing obstacles or enemies the player can collide with.
-class Enemy extends PositionComponent with Collidable {
-  Enemy({Vector2? position, Vector2? size}) : super(position: position, size: size) {
-    addShape(HitboxRectangle());
+  void takeDamage() {
+    if (isInvulnerable) return;
+    
+    gameRef.loseLife();
+    isInvulnerable = true;
+    
+    Future.delayed(const Duration(seconds: 2), () {
+      isInvulnerable = false;
+    });
   }
 }

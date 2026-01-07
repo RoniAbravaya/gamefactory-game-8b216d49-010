@@ -1,55 +1,50 @@
 import 'package:flame/components.dart';
-import 'package:flame/geometry.dart';
-import 'package:flame_audio/flame_audio.dart';
+import 'package:flame/collisions.dart';
+import 'package:flutter/material.dart';
 
-/// A component representing a collectible item in a platformer game.
-/// It includes collision detection, a score value, optional animation, and a sound effect upon collection.
-class Collectible extends SpriteComponent with Hitbox, Collidable {
-  /// The score value this collectible adds to the player's score upon collection.
-  final int scoreValue;
+class Collectible extends PositionComponent with CollisionCallbacks {
+  final int value;
+  double _floatOffset = 0;
 
-  /// The path to the sound effect file that should be played when this collectible is collected.
-  final String collectionSoundPath;
-
-  /// Creates a new [Collectible] instance.
-  ///
-  /// [sprite] is the visual representation of the collectible.
-  /// [scoreValue] is the value added to the player's score when collected.
-  /// [collectionSoundPath] is the path to the sound effect played upon collection.
-  /// [size] is the size of the collectible.
-  /// [position] is the initial position of the collectible in the game world.
   Collectible({
-    required Sprite sprite,
-    required this.scoreValue,
-    required this.collectionSoundPath,
-    Vector2? position,
-    Vector2? size,
-  }) : super(sprite: sprite, position: position, size: size) {
-    addShape(HitboxRectangle());
-  }
+    required Vector2 position,
+    this.value = 10,
+  }) : super(
+          position: position,
+          size: Vector2(30, 30),
+          anchor: Anchor.center,
+        );
 
   @override
-  Future<void>? onLoad() async {
+  Future<void> onLoad() async {
     await super.onLoad();
-    // Optionally, initialize animations or other setup tasks here.
-  }
-
-  /// Handles what happens when this collectible is collected.
-  void collect() {
-    // Play the collection sound effect.
-    FlameAudio.play(collectionSoundPath);
-
-    // Perform any additional actions needed upon collection, such as updating the game state.
-    
-    // Remove this collectible from the game.
-    removeFromParent();
+    add(CircleHitbox());
   }
 
   @override
-  void onCollision(Set<Vector2> intersectionPoints, Collidable other) {
-    super.onCollision(intersectionPoints, other);
-    // Check if the colliding entity is the player or a player-like entity.
-    // This might require checking the type of `other` or using tags.
-    // If so, call `collect()`.
+  void update(double dt) {
+    super.update(dt);
+    
+    position.y += 80 * dt;
+    
+    _floatOffset += dt * 5;
+    position.x += (0.5 * ((_floatOffset % 2) < 1 ? 1 : -1));
+    
+    if (position.y > 900) {
+      removeFromParent();
+    }
+  }
+
+  @override
+  void render(Canvas canvas) {
+    canvas.drawCircle(
+      Offset(size.x / 2, size.y / 2),
+      size.x / 2,
+      Paint()..color = Colors.amber,
+    );
+  }
+
+  void collect() {
+    removeFromParent();
   }
 }

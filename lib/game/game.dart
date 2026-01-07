@@ -1,124 +1,137 @@
 import 'package:flame/game.dart';
-import 'package:flame/input.dart';
-import 'package:test6_platformer_10/components/player.dart';
-import 'package:test6_platformer_10/components/obstacle.dart';
-import 'package:test6_platformer_10/components/collectible.dart';
-import 'package:test6_platformer_10/services/analytics.dart';
-import 'package:test6_platformer_10/services/ads.dart';
-import 'package:test6_platformer_10/services/storage.dart';
+import 'package:flame/components.dart';
+import 'package:flame/events.dart';
+import 'package:flutter/material.dart';
+import 'components/player.dart';
+import 'components/spawner.dart';
+import 'game_controller.dart';
+import 'input_handler.dart';
+import '../services/analytics_service.dart';
+import '../config/levels.dart';
 
-/// The main game class for the 'test6-platformer-10' game.
-class Test6Platformer10Game extends FlameGame with TapDetector {
-  /// The current game state.
-  GameState _gameState = GameState.playing;
+enum GameState { playing, paused, gameOver, levelComplete }
 
-  /// The player component.
-  late Player _player;
-
-  /// The list of obstacles in the current level.
-  final List<Obstacle> _obstacles = [];
-
-  /// The list of collectibles in the current level.
-  final List<Collectible> _collectibles = [];
-
-  /// The current score.
-  int _score = 0;
-
-  /// The analytics service.
-  final AnalyticsService _analyticsService = AnalyticsService();
-
-  /// The ads service.
-  final AdsService _adsService = AdsService();
-
-  /// The storage service.
-  final StorageService _storageService = StorageService();
+class test6-platformer-10Game extends FlameGame
+    with HasCollisionDetection, TapCallbacks, DragCallbacks {
+  
+  late Player player;
+  late Spawner spawner;
+  late GameController controller;
+  late InputHandler inputHandler;
+  late AnalyticsService analytics;
+  
+  GameState state = GameState.playing;
+  int currentLevel = 1;
+  int score = 0;
+  int lives = 3;
+  LevelConfig? levelConfig;
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    _loadLevel(1);
+    
+    analytics = AnalyticsService();
+    await analytics.initialize();
+    
+    controller = GameController(this);
+    inputHandler = InputHandler(this);
+    
+    camera.viewfinder.anchor = Anchor.topLeft;
+    
+    await loadLevel(currentLevel);
+    analytics.logGameStart();
   }
 
-  /// Loads the specified level.
-  void _loadLevel(int levelNumber) {
-    // Load level data from storage or other source
-    // Instantiate player, obstacles, and collectibles
-    // Add components to the game world
+  Future<void> loadLevel(int level) async {
+    currentLevel = level;
+    levelConfig = LevelConfigs.getLevel(level);
+    
+    removeAll(children.whereType<PositionComponent>());
+    
+    player = Player(position: Vector2(size.x / 2, size.y - 100));
+    add(player);
+    
+    spawner = Spawner(
+      spawnRate: levelConfig?.obstacleSpeed ?? 1.0,
+      gameSize: size,
+    );
+    add(spawner);
+    
+    score = 0;
+    state = GameState.playing;
+    
+    analytics.logLevelStart(level);
+    overlays.add('GameOverlay');
   }
 
   @override
   void update(double dt) {
     super.update(dt);
-
-    // Update player, obstacles, and collectibles
-    // Check for collisions and update score
-    // Handle game state transitions (playing, paused, game_over, level_complete)
+    if (state != GameState.playing) return;
+    controller.update(dt);
   }
 
   @override
-  void onTapDown(TapDownInfo info) {
-    super.onTapDown(info);
-    // Handle tap input for player jump
+  void onTapDown(TapDownEvent event) {
+    inputHandler.onTapDown(event.localPosition);
   }
 
-  /// Pauses the game.
+  @override
+  void onDragUpdate(DragUpdateEvent event) {
+    inputHandler.onDrag(event.localDelta);
+  }
+
+  void addScore(int points) {
+    score += points;
+    if (levelConfig != null && score >= levelConfig!.targetScore) {
+      onLevelComplete();
+    }
+  }
+
+  void loseLife() {
+    lives--;
+    if (lives <= 0) {
+      onGameOver();
+    }
+  }
+
+  void onLevelComplete() {
+    state = GameState.levelComplete;
+    analytics.logLevelComplete(currentLevel, score, 0);
+    overlays.add('LevelCompleteOverlay');
+    overlays.remove('GameOverlay');
+  }
+
+  void onGameOver() {
+    state = GameState.gameOver;
+    analytics.logLevelFail(currentLevel, score, 'no_lives', 0);
+    overlays.add('GameOverOverlay');
+    overlays.remove('GameOverlay');
+  }
+
+  void restartLevel() {
+    lives = 3;
+    loadLevel(currentLevel);
+    overlays.remove('GameOverOverlay');
+    overlays.remove('LevelCompleteOverlay');
+  }
+
+  void nextLevel() {
+    if (currentLevel < 10) {
+      loadLevel(currentLevel + 1);
+      overlays.remove('LevelCompleteOverlay');
+    }
+  }
+
   void pauseGame() {
-    _gameState = GameState.paused;
-    // Pause game components and update UI
+    state = GameState.paused;
+    pauseEngine();
+    overlays.add('PauseOverlay');
   }
 
-  /// Resumes the game.
   void resumeGame() {
-    _gameState = GameState.playing;
-    // Resume game components and update UI
+    state = GameState.playing;
+    resumeEngine();
+    overlays.remove('PauseOverlay');
   }
-
-  /// Ends the game.
-  void gameOver() {
-    _gameState = GameState.gameOver;
-    // Handle game over logic, update UI, and show retry prompt
-  }
-
-  /// Completes the current level.
-  void levelComplete() {
-    _gameState = GameState.levelComplete;
-    // Handle level completion logic, update UI, and show next level prompt
-  }
-
-  /// Increments the score by the specified amount.
-  void incrementScore(int amount) {
-    _score += amount;
-    // Update score UI
-  }
-
-  /// Tracks a key event for analytics.
-  void trackEvent(String eventName) {
-    _analyticsService.trackEvent(eventName);
-  }
-
-  /// Shows a rewarded ad.
-  Future<bool> showRewardedAd() async {
-    return await _adsService.showRewardedAd();
-  }
-
-  /// Saves the game progress.
-  Future<void> saveProgress() async {
-    await _storageService.saveProgress(_score, _gameState);
-  }
-
-  /// Loads the game progress.
-  Future<void> loadProgress() async {
-    final progress = await _storageService.loadProgress();
-    _score = progress.score;
-    _gameState = progress.gameState;
-    // Update game state and UI accordingly
-  }
-}
-
-/// Represents the current state of the game.
-enum GameState {
-  playing,
-  paused,
-  gameOver,
-  levelComplete,
 }
